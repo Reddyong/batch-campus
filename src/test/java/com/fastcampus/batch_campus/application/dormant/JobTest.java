@@ -1,10 +1,11 @@
-package com.fastcampus.batch_campus;
+package com.fastcampus.batch_campus.application.dormant;
 
 import com.fastcampus.batch_campus.batch.BatchStatus;
+import com.fastcampus.batch_campus.batch.Job;
 import com.fastcampus.batch_campus.batch.JobExecution;
+import com.fastcampus.batch_campus.batch.TaskletJob;
 import com.fastcampus.batch_campus.customer.Customer;
 import com.fastcampus.batch_campus.customer.CustomerRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class DormantBatchJobTest {
@@ -24,7 +24,7 @@ class DormantBatchJobTest {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private DormantBatchJob dormantBatchJob;
+    private Job dormantBatchJob;
 
     @BeforeEach
     public void setup() {
@@ -97,13 +97,29 @@ class DormantBatchJobTest {
     @DisplayName(value = "배치가 실패하면 BatchStatus 는 FAILED 를 반환해야한다.")
     void test4() {
         // given
-        DormantBatchJob dormantBatchJob = new DormantBatchJob(null);
+        Job job = new TaskletJob(null);
 
         // when
-        JobExecution result = dormantBatchJob.execute();
+        JobExecution result = job.execute();
 
         // then
         assertThat(result.getStatus()).isEqualTo(BatchStatus.FAILED);
+    }
+
+    @Test
+    @DisplayName(value = "358일 전에 로그인한 고객에게 휴면계정 예정자라고 메일을 발송해야한다.")
+    void test5() {
+        // given
+        saveCustomer(358);
+        saveCustomer(358);
+        saveCustomer(358);
+        saveCustomer(35);
+        saveCustomer(35);
+
+        // when
+
+        // then
+        dormantBatchJob.execute();
     }
 
     private void saveCustomer(long loginMinusDays) {
